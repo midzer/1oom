@@ -104,6 +104,8 @@ static Mix_MusicType mus_type_to_sdlm(mus_type_t type)
 int hw_audio_init(void)
 {
     if (opt_audio_enabled) {
+        Mix_Init(MIX_INIT_MID);
+        Mix_SetTimidityCfg("timidity.cfg");
         int num_output_channels;
         uint16_t mixer_format;
         int slice = get_slice_size();

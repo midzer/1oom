@@ -43,11 +43,11 @@ if test -z "$user_cflags" ; then
         dnl Set appropriate optimization options (better than the default -g -O)
         dnl if using GCC.
         dnl If the user has specified her own `CFLAGS', we do not override them.
-        optimization_c="-O3"
+        optimization_c="-flto -O3 -fno-rtti -fno-exceptions"
 
         dnl Use -g if available.
         if test x"$ac_cv_prog_cc_g" = "xyes" ; then
-            CFLAGS="-g $optimization_c $warnings_c"
+            CFLAGS="$optimization_c $warnings_c"
         else
             CFLAGS="$optimization_c $warnings_c"
         fi
