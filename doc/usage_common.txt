@@ -125,18 +125,16 @@ For some graphical UIs:
                            default = 833333, or (1000000 * 5)/6
 
 For SDL HWs:
+    -forcesw             Force software rendering
+    -noforcesw           Do not force software rendering
     -mousespd SPEED      Set mouse speed (default = 100)
     -sdlmixersf FILE.SF2 Set SDL_mixer soundfont
 
 For SDL1 HW:
-    -gl                  Enable OpenGL
-    -nogl                Disable OpenGL
     -bpp BPP             Set bits/pixel (0 = autodetect)
     -filt FILTER         Set OpenGL filter (0 = nearest, 1 = linear)
 
 For SDL2 HW:
-    -forcesw             Force software rendering
-    -noforcesw           Do not force software rendering
     -intscaling          Force integer scaling
     -nointscaling        Do not force integer scaling
     -relmouse            Use relative mouse mode
@@ -176,6 +174,7 @@ For all game UIs:
     -skipintro           Skip intro
     -noskipintro         Do not skip intro
     -nextturn            Go directly to next turn (for reproducing bugs)
+    -savequit            Save and quit (for debugging)
     YOMAMA               Skip intro this time
     s                    Continue game
 
@@ -294,3 +293,10 @@ Pressing the Auto button results in the battle beings fought as if the player(s)
 pressed Auto right after starting combat.
 The Retreat button works as if the (human) player(s) pressed Retreat at the
 earliest and every opportunity.
+
+4.2. Improved galaxy generator
+-------------------------------
+
+The improved galaxy generator allows you to fine-tune your opponents' positions.
+num_dist_checks sets the number of players that will be kept away from others.
+num_ok_planet_checks sets how many players will have an acceptable second planet.

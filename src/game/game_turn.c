@@ -64,10 +64,8 @@ static void game_turn_countdown_ceasefire(struct game_s *g)
 {
     for (player_id_t j = PLAYER_0; j < g->players; ++j) {
         for (player_id_t i = PLAYER_0; i < g->players; ++i) {
-            uint8_t v;
-            v = g->evn.ceasefire[j][i];
-            if (v > 0) {
-                g->evn.ceasefire[j][i] = v - 1;
+            if (g->evn.ceasefire[j][i] > 0) {
+                --g->evn.ceasefire[j][i];
             }
         }
     }
@@ -508,7 +506,7 @@ static void game_turn_build_def(struct game_s *g)
                 int curcost;
                 curcost = MIN(e->planet_shield_cost, p->bc_to_shield);
                 newshield = 0;
-                for (int i = 1; (i < PSHIELD_NUM) && (curcost >= game_num_pshield_cost[i]); ++i) {
+                for (int j = 1; (j < PSHIELD_NUM) && (curcost >= game_num_pshield_cost[j]); ++j) {
                     newshield += 5;
                 }
                 if (newshield != p->shield) {
@@ -583,17 +581,19 @@ static void game_turn_build_ship(struct game_s *g)
                     shipnum = game_num_limit_ships_all - srd->shipcount[si];
                 }
                 SETMAX(shipnum, 0);
-                if (shipnum > 0) {
-                    srd->shipcount[si] += shipnum;
-                    dest = p->reloc;
-                    if (dest == i) {
-                        e->orbit[i].ships[si] += shipnum;
+                srd->shipcount[si] += shipnum;
+                dest = p->reloc;
+                if (dest == i) {
+                    e->orbit[i].ships[si] += shipnum;
+                    if (shipnum > 0) {
                         BOOLVEC_SET1(p->finished, FINISHED_SHIP);
-                    } else {
+                    }
+                } else {
+                    if (shipnum > 0) {
                         game_send_fleet_reloc(g, owner, i, dest, si, shipnum);
                     }
-                    g->evn.new_ships[owner][si] += shipnum;
                 }
+                g->evn.new_ships[owner][si] += shipnum;
                 p->bc_to_ship = prod;
             }
         }
@@ -1179,9 +1179,9 @@ static void game_turn_transport(struct game_s *g)
             if (g->evn.have_guardian && (dest == g->evn.planet_orion_i)) {
                 pop3 = 0;
             }
-            for (monster_id_t i = MONSTER_CRYSTAL; i <= MONSTER_AMOEBA; ++i) {
+            for (monster_id_t j = MONSTER_CRYSTAL; j <= MONSTER_AMOEBA; ++j) {
                 monster_t *m;
-                m = (i == MONSTER_CRYSTAL) ? &(g->evn.crystal) : &(g->evn.amoeba);
+                m = (j == MONSTER_CRYSTAL) ? &(g->evn.crystal) : &(g->evn.amoeba);
                 if (m->exists && /*(m->killer == PLAYER_NONE) &&*/ (m->x == p->x) && (m->y == p->y)) { /* FIXME dead monster kills transports ? */
                     pop3 = 0;
                 }
@@ -1230,12 +1230,18 @@ static void game_turn_transport(struct game_s *g)
                 }
             } else {
                 /*e3fe*/
-#if 0
-                if ((p->owner == PLAYER_NONE) || (p->pop == 0)) { /* never true (tested above) */
-                    /* ignored */
-                } else
-#endif
-                if (p->owner == owner) {
+                if ((p->owner == PLAYER_NONE) || (p->pop == 0)) {
+                    if (IS_HUMAN(g, owner)) {
+                        ui_landing(g, owner, dest);
+                    }
+                    p->pop = pop3;
+                    p->bc_to_refit = 0;
+                    p->pop_oper_fact = 1;
+                    if (dest == g->evn.planet_orion_i) {
+                        g->evn.have_orion_conquer = owner + 1;
+                    }
+                    p->owner = owner;
+                } else if (p->owner == owner) {
                     if (p->unrest == PLANET_UNREST_REBELLION) {
                         ADDSATT(p->inbound[owner], pop3, game_num_max_inbound);
                         p->total_inbound[owner] += pop3;
@@ -1393,7 +1399,7 @@ static void game_turn_update_have_met(struct game_s *g)
     game_update_empire_contact(g);
     for (player_id_t i = PLAYER_0; i < g->players; ++i) {
         empiretechorbit_t *e = &(g->eto[i]);
-        if (IS_AI(g, i)) {
+        if (!IS_HUMAN(g, i)) {
             continue;
         }
         for (player_id_t j = PLAYER_0; j < g->players; ++j) {

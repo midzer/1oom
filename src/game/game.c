@@ -38,6 +38,7 @@ static bool game_opt_undo_enabled = true;
 static bool game_opt_year_save_enabled = false;
 static bool game_opt_init_save_enabled = true;
 static bool game_opt_next_turn = false;
+static bool game_opt_save_quit = false;
 
 static struct game_end_s game_opt_end = { GAME_END_NONE, 0, 0, 0, 0 };
 static struct game_new_options_s game_opt_new = GAME_NEW_OPTS_DEFAULT;
@@ -88,6 +89,7 @@ static void game_stop(struct game_s *g)
     g->gaux->flag_cheat_spy_hint = false;
     g->gaux->flag_cheat_stars = false;
     g->gaux->flag_cheat_tech_hint = false;
+    g->gaux->flag_cheat_news = false;
 }
 
 static void game_set_opts_from_value(struct game_new_options_s *go, int v)
@@ -465,6 +467,9 @@ const struct cmdline_options_s main_cmdline_options[] = {
     { "-nextturn", 0,
       options_enable_bool_var, (void *)&game_opt_next_turn,
       NULL, "Go directly to next turn (for reproducing bugs)" },
+    { "-savequit", 0,
+      options_enable_bool_var, (void *)&game_opt_save_quit,
+      NULL, "Save and quit (for debugging)" },
     { 0, 0, 0, 0, 0, 0 }
 };
 
@@ -631,7 +636,6 @@ const struct cfg_items_s game_cfg_items[] = {
     CFG_ITEM_BOOL("rules_slider_eco_done_fix", &game_num_slider_eco_done_fix),
     CFG_ITEM_BOOL("rules_cond_switch_to_ind_fix", &game_num_cond_switch_to_ind_fix),
     CFG_ITEM_BOOL("rules_waste_adjust_fix", &game_num_waste_adjust_fix),
-    CFG_ITEM_BOOL("rules_slider_respects_locks", &game_num_slider_respects_locks),
     CFG_ITEM_BOOL("rules_orbital_bio_fix", &game_num_orbital_bio_fix),
     CFG_ITEM_BOOL("rules_orbital_weap_any", &game_num_orbital_weap_any),
     CFG_ITEM_BOOL("rules_orbital_weap_4", &game_num_orbital_weap_4),
@@ -843,12 +847,15 @@ int main_do(void)
         game_end.type = GAME_END_NONE;
         while ((game_end.type == GAME_END_NONE) || (game_end.type == GAME_END_FINAL_WAR)) {
             for (; ((game_end.type == GAME_END_NONE) || (game_end.type == GAME_END_FINAL_WAR)) && (game.active_player < game.players); ++game.active_player) {
-                if (IS_AI(&game, game.active_player) || (!IS_ALIVE(&game, game.active_player))) {
+                if (!IS_HUMAN(&game, game.active_player) || (!IS_ALIVE(&game, game.active_player))) {
                     continue;
                 }
                 if (game_opt_next_turn) {
                     game_opt_next_turn = false;
                     break;
+                }
+                if (game_opt_save_quit) {
+                    goto turn_act_quit;
                 }
                 switch (ui_game_turn(&game, &load_game_i, game.active_player)) {
                     case UI_TURN_ACT_LOAD_GAME:
@@ -856,6 +863,7 @@ int main_do(void)
                         ui_game_end(&game);
                         goto main_menu_load_game;
                     case UI_TURN_ACT_QUIT_GAME:
+                        turn_act_quit:
                         if (game_save_do_save_i(GAME_SAVE_I_CONTINUE, "Continue", &game)) {
                             log_error("Game: could create continue save\n");
                         }
@@ -881,6 +889,10 @@ int main_do(void)
         switch (game_end.type) {
             case GAME_END_QUIT:
                 log_message("Game: quit (ingame)\n");
+                if (game_opt_save_quit) {
+                    game_opt_save_quit = false;
+                    goto done;
+                }
                 break;
             case GAME_END_NONE:
             case GAME_END_FINAL_WAR:

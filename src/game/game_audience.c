@@ -566,7 +566,7 @@ static void audience_menu_treaty(struct audience_s *au)
     }
     all_num = 0;
     for (player_id_t i = PLAYER_0; i < g->players; ++i) {
-        if ((i != ph) && (i != pa) && ((ea->treaty[i] == TREATY_ALLIANCE) || (game_num_aud_ask_break_nap && (ea->treaty[i] == TREATY_NONAGGRESSION)))) {
+        if ((i != ph) && (i != pa) && BOOLVEC_IS1(ea->contact, i) && ((ea->treaty[i] == TREATY_ALLIANCE) || (game_num_aud_ask_break_nap && (ea->treaty[i] == TREATY_NONAGGRESSION)))) {
             all_tbl[all_num++] = i;
         }
     }
@@ -722,8 +722,10 @@ static void audience_menu_threat(struct audience_s *au)
         default:
             break;
     }
-    if ((selected != -1) && (selected != 4)) {
+    if ((g->ai_id == GAME_AI_CLASSIC) || ((selected != -1) && (selected != 4))) {
         game_diplo_annoy(g, ph, pa, 10);    /* WASBUG MOO1 does this before the if, annoying by merely entering the menu */
+    }
+    if ((selected != -1) && (selected != 4)) {
         game_audience_set_dtype(au, dtype, 3);
     }
 }

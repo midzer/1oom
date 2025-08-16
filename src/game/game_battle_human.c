@@ -49,22 +49,24 @@ static void game_battle_with_human_init_sub1(struct battle_s *bt)
         int att_from, att_to, def_from, def_to;
         bt->have_subspace_int = true;
         if (bt->item[0].side == SIDE_L) {
-            def_to = att_from = bt->s[SIDE_L].items + 1;
+            att_from = bt->s[SIDE_L].items + 1;
             att_to = bt->items_num;
             def_from = 1;
+            def_to = bt->s[SIDE_L].items;
         } else {
             att_from = 1;
-            def_from = att_to = bt->s[SIDE_L].items + 1;
+            att_to = bt->s[SIDE_L].items;
+            def_from = bt->s[SIDE_L].items + 1;
             def_to = bt->items_num;
         }
-        for (int i = att_from; i < att_to; ++i) {
+        for (int i = att_from; i <= att_to; ++i) {
             if (bt->item[i].subspace > 0) {
                 bt->item[i].subspace = -1;
                 flag_att_have_teleporter = true;
             }
         }
         if (flag_att_have_teleporter) {
-            for (int i = def_from; i < def_to; ++i) {
+            for (int i = def_from; i <= def_to; ++i) {
                 if (bt->item[i].subspace > 0) {
                     bt->item[i].subspace = -1;
                 }
@@ -120,7 +122,7 @@ static void game_battle_place_items(struct battle_s *bt)
             {
                 const struct battle_item_s *b;
                 b = &(bt->item[0]);
-                if ((b->side != SIDE_NONE) && (b->sx == x) && (b->sy == y)) {
+                if ((b->side != SIDE_NONE) && (abs(b->sx - x) <= 1) && (abs(b->sy - y) <= 1)) {
                     flag_ok = false;
                 }
             }
@@ -167,6 +169,7 @@ static void game_battle_missile_remove_unused(struct battle_s *bt)
         struct battle_missile_s *m = &(bt->missile[i]);
         if (m->target == MISSILE_TARGET_NONE) {
             util_table_remove_item_any_order(i, bt->missile, sizeof(struct battle_missile_s), bt->num_missile);
+            --i;
             --bt->num_missile;
         }
     }
@@ -541,7 +544,7 @@ static int game_battle_get_priority(const struct battle_item_s *b, race_t race)
     if (b->sbmask & (1 << SHIP_SPECIAL_BOOL_SCANNER)) {
         prio += 3;
     }
-    if (b->subspace != 0) {
+    if (b->subspace > 0) {
         prio += b->subspace * 1000;
     }
     if (race == RACE_ALKARI) {
@@ -772,8 +775,8 @@ static void game_battle_item_move_find_route(struct battle_s *bt, uint8_t *route
         game_battle_set_route_from_tbl(route, tblx, tbly, len);
     } else {
         int minrlen = 999, minlen = 999;
-        for (int sy2 = 0; sy2 < BATTLE_AREA_H; ++sy2) {
-            for (int sx2 = 0; sx2 < BATTLE_AREA_W; ++sx2) {
+        for (int sx2 = 0; sx2 < BATTLE_AREA_W; ++sx2) {
+            for (int sy2 = 0; sy2 < BATTLE_AREA_H; ++sy2) {
                 if ((b->sx == sx2) && (b->sy == sy2)) {
                     continue;   /* WASBUG? MOO1 does not check, may use -1 as index below */
                 }
@@ -794,9 +797,12 @@ static void game_battle_item_move_find_route(struct battle_s *bt, uint8_t *route
                                 game_battle_extend_route_from_tbl(route, tblx2, tbly2, len2);
                             }
                         } else {
-                            for (int sy3 = 0; sy3 < BATTLE_AREA_H; ++sy3) {
-                                for (int sx3 = 0; sx3 < BATTLE_AREA_W; ++sx3) {
-                                    if ((sx3 != sx2) || (sy3 != sy2)) {
+                            for (int sx3 = 0; sx3 < BATTLE_AREA_W; ++sx3) {
+                                for (int sy3 = 0; sy3 < BATTLE_AREA_H; ++sy3) {
+                                    if ((sx3 == sx2) && (sy3 == sy2)) {
+                                        break;  /* BUG? not continue */
+                                    }
+                                    {
                                         int len2;
                                         len2 = util_math_line_plot(sx2, sy2, sx3, sy3, tblx2, tbly2);
                                         if ((game_battle_area_check_line_ok(bt, tblx2, tbly2, len2) == 1) && (b->man >= (len + len2))) {
@@ -1976,20 +1982,20 @@ void game_battle_area_setup(struct battle_s *bt)
                 dist = util_math_dist_maxabs(b->sx, b->sy, b2->sx, b2->sy);
                 if (i == 0) {
                     v = -30;
-                    for (int i = 0; i < num_weap; ++i) {
+                    for (int j = 0; j < num_weap; ++j) {
                         bool is_missile;
                         const struct shiptech_weap_s *w;
-                        w = &(tbl_shiptech_weap[b->wpn[i].t]);
+                        w = &(tbl_shiptech_weap[b->wpn[j].t]);
                         is_missile = ((w->damagemax == w->damagemin) && (!w->is_bomb) && (w->misstype == 0));
-                        if ((b->actman > 0) || ((w->range >= dist) && (b->wpn[i].numfire > 0) && (b->wpn[i].numshots != 0))) {
+                        if ((b->actman > 0) || ((w->range >= dist) && (b->wpn[j].numfire > 0) && (b->wpn[j].numshots != 0))) {
                             bt->turn_done = false;
                         }
-                        if ((b->wpn[i].numshots == -1) && (w->misstype == 0)) {
+                        if ((b->wpn[j].numshots == -1) && (w->misstype == 0)) {
                             range = w->range + b->extrarange;
                         } else {
                             range = w->range;
                         }
-                        if ((range >= dist) && ((b->missile == 1) || (!is_missile)) && (b->wpn[i].numfire > 0) && (b->wpn[i].numshots != 0)) {
+                        if ((range >= dist) && ((b->missile == 1) || (!is_missile)) && (b->wpn[j].numfire > 0) && (b->wpn[j].numshots != 0)) {
                             v = 30;
                         }
                     }

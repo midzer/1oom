@@ -1,3 +1,76 @@
+1oom-v1.11.7
+------------
+
+Game:
+- Fixed minor bug related to audience
+- Disabled game_num_slider_respects_locks (deprecated)
+Allegro4:
+- Fixed version check
+Main menu:
+- Added option to disable UI delay (experimental)
+- Added option to reset to default settings
+
+1oom-v1.11.6
+------------
+
+Galaxy generator:
+- Fixed planets in nebulae in new games
+
+1oom-v1.11.5
+------------
+
+SDL2:
+- Implemented -nograbmouse mode for absolute mouse
+UI:
+- Fixed a small graphical bug
+
+1oom-v1.11.4
+------------
+
+This release inherits the simplified aspect ratio correction implementation
+from Chocolate Doom (SDL2):
+
+- Now only 2 modes are available, with and without correction
+- In absolute mouse mode, adjusted mouse resolution to match aspect ratio
+- Added correction of integer arithmetic of mouse jumps
+- Aspect ratio correction is now enabled by default
+
+1oom-v1.11.3
+------------
+
+- SDL1 is no longer supported and disabled by default
+- Minor SDL2 fixes
+- Fixed several significant bugs in the game engine to match the original
+
+1oom-v1.11.2
+------------
+
+This release corrects several fundamental differences from the original:
+
+- The behavior of ships with bio-weapons has been restored
+- The code responsible for landing troops on a planet with zero population
+  has been restored
+- Restored original bugs in the pathfinding code on the battlefield
+- Fixed the location of rocks near the planet
+- Restored the sound effect of the Ships button on the star map
+- Several AI diplomacy fixes moved to Classic+
+
+1oom-v1.11.1
+------------
+
+This release contains a significant number of experimental features:
+
+- Added several global research cost modifiers
+- Main menu slightly sorted
+- First tech cost fix (Classic+ AI) is now a separate rule
+- Added the ability to lock the slider for all colonies of the same type
+- Added some fixes for slider_respect_locks rule (still experimental)
+- The distance hint has been replaced with a new Alt+o mode
+- Added the ability to rename planets and ship designs
+- Smoother scrolling of the star map is now optional
+- Added experimental ability to load saves from MOO 1.3
+- Added some minor corrections
+
 1oom-v1.11
 ----------
 

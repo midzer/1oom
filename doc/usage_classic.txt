@@ -43,6 +43,7 @@ The following new UI features are always enabled/available:
 - Mouse wheel on planet name in the galaxy movement screen changes planet
 - Space bar works as a generic dismiss message key (Continue, ...)
 - Ctrl and Alt works as a step modifier for the counters and sliders:
+  - in the main menu
   - on the Design screen
   - on the fleet sending screen
   - on the galaxy movement screen
@@ -53,7 +54,6 @@ The following new UI features are always enabled/available:
 - F4/F5 can iterate over fleets of the same owner
 - In Tech screen +/- adjusts the current field slider
 - In Tech screen the L key locks the current slider
-- Clicking the portraits in Races screen brings Report page
 - In Races screen the keys 1-5 correspond to clicking the portraits
 - In Specs screen the keys 1-6 correspond to clicking the scrap button
 - In Tech screen the keys 1-6 correspond to clicking the tech fields
@@ -71,12 +71,12 @@ The following new UI features are always enabled/available:
 
 The config file item "ui.uiextra" (set via the -uiextra command-line option)
 or selecting the 1oom UI preset enables the following extra UI features:
+- Clicking the portraits in Races screen brings Report page
 - Report screen shows name of AI leaders, Map screen shows current year
 - Pressing + or - will show the slider when sending transport
 - Fleet deployment shows the amount of available ships
 - Alt+f shows friendly fleet routes
 - Alt+o (experimental) toggles text under stars
-- The current planet is allowed as a target on the fleet deployment screen
 - Buttons and slider are always visible when sending transport
 - Clicking a selected destination star again works as Accept for fleet send etc
 - The position of the build finished message is slightly improved.
@@ -131,7 +131,9 @@ selecting the 1oom UI preset:
 - The question mark cursor is disabled on the galaxy movement screen
   ("ui.sm_no_question_mark_cursor")
 - Pressing the "Ships" button in the galaxy movement screen opens the ship
-  design selection screen ("ui.ui_sm_ships_enabled")
+  design selection screen ("ui.ui_sm_ships_enabled"):
+  - Holding down the Ctrl or Alt keys on the ship design selection screen
+    allows you to make selections for all colonies at once
 - Holding Alt toggles the cursor icon and the ability to select a fleet
   ("ui.sm_explicit_cursor_context")
 

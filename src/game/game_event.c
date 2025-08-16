@@ -436,7 +436,7 @@ bool game_event_run(struct game_s *g, struct game_end_s *ge)
                     ns.subtype = IS_HUMAN(g, player) ? 0 : 4;
                     break;
                 case 2:
-                    ns.subtype = (IS_HUMAN(g, player) && (!rnd_0_nm1(10, &g->seed))) ? 1 : -1;
+                    ns.subtype = (IS_HUMAN(g, player) && (!rnd_0_nm1(10, &g->seed) || g->gaux->flag_cheat_news)) ? 1 : -1;
                     break;
                 case 3:
                     ns.subtype = IS_HUMAN(g, player) ? 2 : 5;
@@ -529,7 +529,7 @@ bool game_event_run(struct game_s *g, struct game_end_s *ge)
                 ns.subtype = IS_HUMAN(g, player) ? 0 : 4;
                 break;
             case 2:
-                ns.subtype = (IS_HUMAN(g, player) && ((!rnd_0_nm1(10, &g->seed)) || (g->evn.nova_years < 3))) ? 1 : -1;
+                ns.subtype = (IS_HUMAN(g, player) && ((!rnd_0_nm1(10, &g->seed)) || (g->evn.nova_years < 3) || g->gaux->flag_cheat_news)) ? 1 : -1;
                 break;
             case 3:
                 ns.subtype = IS_HUMAN(g, player) ? 2 : 5;
@@ -656,7 +656,7 @@ bool game_event_run(struct game_s *g, struct game_end_s *ge)
                 ns.subtype = IS_HUMAN(g, player) ? 0 : 4;
                 break;
             case 2:
-                ns.subtype = (IS_HUMAN(g, player) && ((!rnd_0_nm1(10, &g->seed)) || (g->evn.comet_years < 3))) ? 1 : -1;
+                ns.subtype = (IS_HUMAN(g, player) && ((!rnd_0_nm1(10, &g->seed)) || (g->evn.comet_years < 3) || g->gaux->flag_cheat_news)) ? 1 : -1;
                 break;
             case 3:
                 ns.subtype = IS_HUMAN(g, player) ? 2 : 5;
@@ -1145,7 +1145,7 @@ bool game_event_run(struct game_s *g, struct game_end_s *ge)
         g->guardian_killer = PLAYER_NONE;
     }
     /* MOO1 has the following way before the guardian news which gives a strange news order */
-    if (g->evn.have_orion_conquer && BOOLVEC_IS0(g->evn.done, 17)) { /* WASBUG MOO1 nevers sets have_orion_conquer */
+    if (g->evn.have_orion_conquer && BOOLVEC_IS0(g->evn.done, 17)) {
         player_id_t player = g->evn.have_orion_conquer - 1;
         empiretechorbit_t *e = &(g->eto[player]);
         BOOLVEC_SET1(g->evn.done, 17);

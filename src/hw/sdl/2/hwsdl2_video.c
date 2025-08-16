@@ -242,7 +242,7 @@ static void video_render(int bufi)
 */
 static void video_adjust_window_size(int *wptr, int *hptr)
 {
-    if (hw_opt_aspect != 0) {
+    {
         int w = *wptr, h = *hptr;
         if ((w * video.actualh) <= (h * video.bufw)) {
             /* We round up window_height if the ratio is not exact; this leaves the result stable. */
@@ -302,6 +302,7 @@ static void video_update(void)
                 if (hw_opt_autotrim || video.shrink || video.enlarge) {
                     video_adjust_window_size(&w, &h);
                 }
+                log_message("SDL_SetWindowSize: %d, %d\n", w, h);
                 SDL_SetWindowSize(video.window, w, h);
                 hw_opt_screen_winw = w;
                 hw_opt_screen_winh = h;
@@ -447,6 +448,7 @@ static void video_window_destroy(void)
 {
     video_destroy_renderer();
     if (video.window) {
+        hw_mouse_ungrab();
         SDL_DestroyWindow(video.window);
         video.window = NULL;
     }
@@ -537,16 +539,11 @@ static int video_sw_set(int w, int h)
                     (info.flags & SDL_RENDERER_ACCELERATED) ? ", accelerated" : "",
                     (info.flags & SDL_RENDERER_PRESENTVSYNC) ? ", vsync" : "");
     }
-    if (hw_opt_aspect != 0) {
-        /* Important: Set the "logical size" of the rendering context. At the same
-           time this also defines the aspect ratio that is preserved while scaling
-           and stretching the texture into the window.
-        */
-        SDL_RenderSetLogicalSize(video.renderer, video.bufw, video.actualh);
-    } else {
-        /* Use full window. */
-        SDL_RenderSetViewport(video.renderer, NULL);
-    }
+    /* Important: Set the "logical size" of the rendering context. At the same
+       time this also defines the aspect ratio that is preserved while scaling
+       and stretching the texture into the window.
+    */
+    SDL_RenderSetLogicalSize(video.renderer, video.bufw, video.actualh);
 
     /* Force integer scales for resolution-independent rendering. */
 #if SDL_VERSION_ATLEAST(2, 0, 5)
@@ -604,10 +601,10 @@ static int video_sw_set(int w, int h)
 
 static void hw_video_update_actual_h(void)
 {
-    if (!hw_opt_aspect) {
-        video.actualh = video.bufh;
+    if (hw_opt_aspect_ratio_correct) {
+        video.actualh = video.bufh * 6 / 5;
     } else {
-        video.actualh = (uint32_t)(video.bufh * 1000000) / hw_opt_aspect;
+        video.actualh = video.bufh;
     }
 }
 
@@ -661,11 +658,13 @@ bool hw_video_toggle_fullscreen(void)
     return true;
 }
 
-bool hw_video_update_aspect(void)
+bool hw_video_toggle_aspect(void)
 {
+    hw_opt_aspect_ratio_correct = !hw_opt_aspect_ratio_correct;
     hw_video_update_actual_h();
     video_window_destroy();
     if (video_sw_set(hw_opt_screen_winw, hw_opt_screen_winh) != 0) {
+        hw_opt_aspect_ratio_correct = !hw_opt_aspect_ratio_correct;
         return false;
     }
     return true;
@@ -769,21 +768,33 @@ void hw_video_shutdown(void)
 
 void hw_video_input_grab(bool grab)
 {
-    SDL_SetWindowGrab(video.window, grab);
+    if (hw_opt_relmouse || !hw_opt_nograbmouse) {
+        SDL_SetWindowGrab(video.window, grab);
+    }
     if (hw_opt_relmouse) {
         SDL_SetRelativeMouseMode(grab);
-    } else {
-        hw_mouse_set_xy(moouse_x, moouse_y);
-        SDL_ShowCursor(grab ? SDL_DISABLE : SDL_ENABLE);
     }
 }
 
 void hw_video_mouse_warp(int mx, int my)
 {
 #if SDL_VERSION_ATLEAST(2, 0, 18)
-    int x, y;
-    SDL_RenderLogicalToWindow(video.renderer, mx, my, &x, &y);
-    SDL_WarpMouseInWindow(video.window, x, y);
+    if (!hw_opt_relmouse) {
+        int x, y;
+        float xcheck, ycheck;
+        if (hw_opt_aspect_ratio_correct) {
+            my = my * 6 / 5;
+        }
+        SDL_RenderLogicalToWindow(video.renderer, mx, my, &x, &y);
+        SDL_RenderWindowToLogical(video.renderer, x, y, &xcheck, &ycheck);
+        if (mx > xcheck) {
+            ++x;
+        }
+        if (my > ycheck) {
+            ++y;
+        }
+        SDL_WarpMouseInWindow(video.window, x, y);
+    }
 #else
     mouse_set_xy_from_hw(mx, my);
 #endif

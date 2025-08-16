@@ -465,6 +465,7 @@ static void main_menu_make_options_misc_page(struct main_menu_data_s *d)
     menu_make_bool(menu_allocate_item(), "Skip Random News", &game_opt_skip_random_news, MOO_KEY_n);
     menu_make_bool(menu_allocate_item(), "Skip Copy Protection", &ui_copyprotection_disabled, MOO_KEY_p);
     menu_make_bool(menu_allocate_item(), "News Orion Colonized", &game_num_news_orion, MOO_KEY_o);
+    menu_make_bool(menu_allocate_item(), "UI Delay Enabled", &ui_delay_enabled, MOO_KEY_d);
     menu_make_back(menu_allocate_item());
 }
 
@@ -578,7 +579,6 @@ static void main_menu_make_options_rules_slider_behavior_page(struct main_menu_d
     menu_make_bool(menu_allocate_item(), "Eco Done Fix", &game_num_slider_eco_done_fix, MOO_KEY_UNKNOWN);
     menu_make_bool(menu_allocate_item(), "Newtech Adjust Fix", &game_num_newtech_adjust_fix, MOO_KEY_UNKNOWN);
     menu_make_bool(menu_allocate_item(), "Waste Adjust Fix", &game_num_waste_adjust_fix, MOO_KEY_UNKNOWN);
-    menu_make_bool(menu_allocate_item(), "Slider Respects Locks", &game_num_slider_respects_locks, MOO_KEY_UNKNOWN);
     menu_make_back(menu_allocate_item());
 }
 
@@ -596,6 +596,7 @@ static void main_menu_make_preset_page(struct main_menu_data_s *d)
     d->set_item_dimensions = main_menu_set_item_dimensions;
     menu_make_func(menu_allocate_item(), "Classic", mm_enable_preset_classic, MOO_KEY_c);
     menu_make_func(menu_allocate_item(), "1oom", mm_enable_preset_1oom, MOO_KEY_1);
+    menu_make_bool(menu_item_force_restart(menu_allocate_item()), "Reset To Default Settings", &opt_cfg_reset, MOO_KEY_UNKNOWN);
     menu_make_back(menu_allocate_item());
 }
 

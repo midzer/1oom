@@ -9,6 +9,8 @@
 ===============
 
 1oom requires a copy of the Master of Orion (v1.3) LBX files.
+Please note that older saved games may not work in newer versions of 1oom.
+Read the [changelog](CHANGES) to learn more about the breaking changes.
 
 1.1 Windows, MSDOS
 ------------------
@@ -106,9 +108,12 @@ Readme. Thanks for the patch!
 
 Thanks to [shikadi.net](http://www.shikadi.net) for documenting the
 [music format](http://www.shikadi.net/wiki/modding/index.php?title=XMI_Format&oldid=6874).
+https://moddingwiki.shikadi.net/wiki/XMI_Format
 
 Thanks to CivFanatics forum user sargon0 for
 [partial save game format info](http://forums.civfanatics.com/threads/moo-save-file-layout.275055/).
+
+Special thanks to Zachary Kline (BlindGuyNW) for improving the text version of the game.
 
 Thanks to those who contributed code, ideas or bug reports.
 

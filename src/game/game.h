@@ -74,7 +74,7 @@ typedef struct empiretechorbit_s {
     int16_t diplo_p2[PLAYER_NUM];
     int16_t trust[PLAYER_NUM];
     treaty_t broken_treaty[PLAYER_NUM];
-    int8_t blunder[PLAYER_NUM];
+    int16_t blunder[PLAYER_NUM];
     tech_field_t tribute_field[PLAYER_NUM];
     uint8_t tribute_tech[PLAYER_NUM];
     int16_t mood_treaty[PLAYER_NUM];
@@ -102,7 +102,7 @@ typedef struct empiretechorbit_s {
     uint8_t attack_gift_tech[PLAYER_NUM];
     int16_t attack_gift_bc[PLAYER_NUM];
     int16_t hatred[PLAYER_NUM];
-    uint8_t have_met[PLAYER_NUM]; /* 0, 1, 2 */
+    uint16_t have_met[PLAYER_NUM]; /* 0, 1, 2 */
     uint16_t trade_established_bc[PLAYER_NUM];
     uint8_t have_planet_shield; /* 0, 5, 10, 15, 20 */
     uint16_t planet_shield_cost;
@@ -258,7 +258,7 @@ typedef struct gameevents_s {
     uint8_t sabotage_planet[PLAYER_NUM][PLAYER_NUM]; /* [victim][spy] */
     uint16_t sabotage_num[PLAYER_NUM][PLAYER_NUM]; /* [victim][spy] */
     player_id_t sabotage_spy[PLAYER_NUM][PLAYER_NUM]; /* [victim][spy] */
-    uint8_t ceasefire[PLAYER_NUM][PLAYER_NUM]; /* [human][ai] */
+    int16_t ceasefire[PLAYER_NUM][PLAYER_NUM]; /* [human][ai] */
     BOOLVEC_TBL_DECLARE(help_shown, PLAYER_NUM, HELP_SHOWN_NUM);
     uint16_t build_finished_num[PLAYER_NUM];
     player_id_t voted[PLAYER_NUM];
@@ -339,8 +339,12 @@ static inline bool IS_HUMAN(const struct game_s *g, player_id_t i)
     return IS_PLAYER(g, i) && BOOLVEC_IS0(g->is_ai, i);
 }
 
+static inline bool IS_ALIVE(const struct game_s *g, player_id_t i)
+{
+    return (g->evn.home[i] != PLANET_NONE);
+}
+
 #define IS_AI(_g_, _i_) BOOLVEC_IS1((_g_)->is_ai, (_i_))
-#define IS_ALIVE(_g_, _i_) ((_g_)->evn.home[(_i_)] != PLANET_NONE)
 
 extern bool game_opt_skip_intro_always;
 extern bool game_opt_message_filter[FINISHED_NUM];
